@@ -7,7 +7,7 @@ import io
 # If not, you'll need to create a dummy file for the code to run.
 # For demonstration purposes, we'll create a dummy DataFrame to mimic the excel file.
 try:
-    file_path = '../export.xlsx'
+    file_path = 'export.XLSX'
     df = pd.read_excel(file_path)
 except FileNotFoundError:
     st.warning("`export.xlsx` not found. Using dummy data for demonstration.")
@@ -220,6 +220,7 @@ else: # mode == "Check for a New Aircraft"
 
 
 st.write("It is recommended to cross-check the results with the official document management system to ensure completeness and accuracy.")
+
 
 
 
