@@ -7,7 +7,7 @@ import io
 # If not, you'll need to create a dummy file for the code to run.
 # For demonstration purposes, we'll create a dummy DataFrame to mimic the excel file.
 try:
-    file_path = 'export.XLSX'
+    file_path = 'export.xlsx'
     df = pd.read_excel(file_path)
 except FileNotFoundError:
     st.warning("`export.xlsx` not found. Using dummy data for demonstration.")
@@ -31,7 +31,7 @@ except FileNotFoundError:
     df = pd.DataFrame(data)
 
 # Keep only relevant columns and deduplicate
-df = df[['Document', 'Document version', 'Description', 'From date']]
+df = df[['Document', 'Document version', 'Description', 'From date', 'Full Name' ]]
 df = df.drop_duplicates(subset=['Document'], keep='last')
 df['From date'] = pd.to_datetime(df['From date'], errors='coerce')
 
@@ -218,10 +218,4 @@ else: # mode == "Check for a New Aircraft"
     else:
         st.success(f"No Engineering Derivatives found that were issued before the selected in-service date.")
 
-
 st.write("It is recommended to cross-check the results with the official document management system to ensure completeness and accuracy.")
-
-
-
-
-
