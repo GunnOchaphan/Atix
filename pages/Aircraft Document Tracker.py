@@ -40,10 +40,10 @@ def generate_documents(prefix, count):
         docs.append(doc)
     return docs
 
-ads = generate_documents('AD', 5)
-sbs = generate_documents('SB', 7)
-tos = generate_documents('TO', 4)
-eds = generate_documents('ED', 6)
+ads = generate_documents('AD', 45)
+sbs = generate_documents('SB', 65)
+tos = generate_documents('TO', 65)
+eds = generate_documents('ED', 39)
 
 aircraft_documents = {
     'HS-TXC': {
@@ -144,3 +144,4 @@ else:
         st.write("#### Engineering Documents")
         df_eds = pd.DataFrame(ac_docs['EDs'])
         st.dataframe(df_eds, use_container_width=True, hide_index=True)
+
