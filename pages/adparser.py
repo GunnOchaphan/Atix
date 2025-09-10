@@ -31,22 +31,20 @@ st.markdown(
     unsafe_allow_html=True
 )
 
-st.subheader("AD Information")
-with st.expander("Show AD Details"):
-    st.markdown(f"**AD ID:** {ad_data['AD-id']}")
-    st.markdown(f"**Agency:** {ad_data['Agency']}")
-    st.markdown(f"**Effective Date:** {ad_data['Effective date']}")
-    st.markdown(f"**Material Incorporated by Reference:** {ad_data['Material incorporated by Reference']}")
-    st.markdown(f"**Superseding:** {ad_data['Superseding']}")
-    st.markdown(f"**Affected ADs:** {ad_data['Affected ADs']}")
-    st.markdown(f"**ATA:** {ad_data['ATA']}")
+st.markdown("### AD Details")
+st.markdown(f"**AD ID:** {ad_data['AD-id']}")
+st.markdown(f"**Agency:** {ad_data['Agency']}")
+st.markdown(f"**Effective Date:** {ad_data['Effective date']}")
+st.markdown(f"**Material Incorporated by Reference:** {ad_data['Material incorporated by Reference']}")
+st.markdown(f"**Superseding:** {ad_data['Superseding']}")
+st.markdown(f"**Affected ADs:** {ad_data['Affected ADs']}")
+st.markdown(f"**ATA:** {ad_data['ATA']}")
 
-st.subheader("Applicability")
-with st.expander("Show Applicability"):
-    for airplane_model in ad_data["Applicability"]:
-        st.markdown(f"- {airplane_model}")
+st.markdown("### Applicability")
+for airplane_model in ad_data["Applicability"]:
+    st.markdown(f"- {airplane_model}")
 
-st.subheader("Service Bulletins")
+st.markdown("### Service Bulletins")
 if ad_data.get("Service Bulletins"):
     with st.expander("Show Service Bulletins"):
         for sb in ad_data["Service Bulletins"]:
