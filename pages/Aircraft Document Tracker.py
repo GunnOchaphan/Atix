@@ -1,253 +1,146 @@
 import streamlit as st
 import pandas as pd
-import json
+import random
+from datetime import date, timedelta
 
-# Use the data schema to generate synthetic data
-def generate_synthetic_data():
-    """Generates synthetic data for the Streamlit app based on the schema."""
-    
-    # Aircraft data based on a simplified Thai Airways fleet
-    fleet_data = [
-        {
-            "aircraft_id": "A101",
-            "registration": "HS-TKK",
-            "manufacturer": "Boeing",
-            "model": "777-300ER",
-            "serial_number": "41682",
-            "airworthiness_certificate_date": "2014-01-15",
-            "status": "Active",
-            "applicable_ads": ["AD-2025-06-02", "AD-2024-03-10"],
-            "applicable_sbs": ["SB-777-28-001", "SB-777-57-0125"],
-            "applicable_tos": ["TO-2023-A01"],
-            "applicable_eds": ["ED-2024-01"]
-        },
-        {
-            "aircraft_id": "A102",
-            "registration": "HS-THB",
-            "manufacturer": "Airbus",
-            "model": "A350-900",
-            "serial_number": "106",
-            "airworthiness_certificate_date": "2016-09-01",
-            "status": "Active",
-            "applicable_ads": ["AD-2024-03-11"],
-            "applicable_sbs": ["SB-A350-57-001"],
-            "applicable_tos": ["TO-2023-A02"],
-            "applicable_eds": ["ED-2024-02"]
-        },
-        {
-            "aircraft_id": "A103",
-            "registration": "HS-TQC",
-            "manufacturer": "Boeing",
-            "model": "787-8",
-            "serial_number": "35308",
-            "airworthiness_certificate_date": "2013-09-16",
-            "status": "Active",
-            "applicable_ads": ["AD-2024-03-10"],
-            "applicable_sbs": [],
-            "applicable_tos": [],
-            "applicable_eds": ["ED-2024-01"]
-        }
-    ]
-
-    # AD data, including compliance for specific aircraft
-    ads_data = [
-        {
-            "document_id": "AD-2025-06-02",
-            "title": "Wing Skin Inspection",
-            "issuing_authority": "FAA",
-            "ad_type": "Final Rule",
-            "effective_date": "2025-04-23",
-            "compliance_summary": "Repetitive inspections for cracking on the upper wing skin.",
-            "compliance_status": [
-                {"aircraft_id": "A101", "status": "Compliant", "last_completed_date": "2025-05-01", "next_due_date": "2026-05-01"}
-            ],
-            "applicability": {"aircraft_models": ["777-200", "777-300ER", "777F"], "serial_numbers": []},
-            "referred_documents": {"service_bulletins": ["SB-777-57-0125"], "technical_orders": [], "engineering_directives": []}
-        },
-        {
-            "document_id": "AD-2024-03-10",
-            "title": "Engine Fire Suppression System",
-            "issuing_authority": "EASA",
-            "ad_type": "Emergency",
-            "effective_date": "2024-03-10",
-            "compliance_summary": "Inspection and possible replacement of fire suppression bottles.",
-            "compliance_status": [
-                {"aircraft_id": "A101", "status": "Compliant", "last_completed_date": "2024-03-15", "next_due_date": "N/A"},
-                {"aircraft_id": "A103", "status": "Compliant", "last_completed_date": "2024-03-16", "next_due_date": "N/A"}
-            ],
-            "applicability": {"aircraft_models": ["777-300ER", "787-8"], "serial_numbers": []},
-            "referred_documents": {"service_bulletins": [], "technical_orders": [], "engineering_directives": []}
-        },
-        {
-            "document_id": "AD-2024-03-11",
-            "title": "Landing Gear Actuator",
-            "issuing_authority": "EASA",
-            "ad_type": "Final Rule",
-            "effective_date": "2024-03-15",
-            "compliance_summary": "Replacement of a specific landing gear actuator part.",
-            "compliance_status": [
-                {"aircraft_id": "A102", "status": "Compliant", "last_completed_date": "2024-04-01", "next_due_date": "N/A"}
-            ],
-            "applicability": {"aircraft_models": ["A350-900"], "serial_numbers": []},
-            "referred_documents": {"service_bulletins": [], "technical_orders": [], "engineering_directives": []}
-        }
-    ]
-
-    # Service Bulletin data
-    sbs_data = [
-        {
-            "document_id": "SB-777-28-001",
-            "title": "Hydraulic Pump Seal Replacement",
-            "issuing_authority": "Boeing",
-            "revision": "Rev. 1",
-            "issue_date": "2024-01-20",
-            "description": "Recommended replacement of hydraulic pump seals to prevent leakage.",
-            "applicability": {"aircraft_models": ["777-300ER"], "serial_numbers": []},
-            "referred_ads": []
-        },
-        {
-            "document_id": "SB-777-57-0125",
-            "title": "Wing Skin Inspection",
-            "issuing_authority": "Boeing",
-            "revision": "Rev. 0",
-            "issue_date": "2023-07-25",
-            "description": "Details for wing skin inspection procedure.",
-            "applicability": {"aircraft_models": ["777-300ER"], "serial_numbers": []},
-            "referred_ads": ["AD-2025-06-02"]
-        },
-        {
-            "document_id": "SB-A350-57-001",
-            "title": "Fuselage Frame Repair",
-            "issuing_authority": "Airbus",
-            "revision": "Rev. 2",
-            "issue_date": "2023-11-10",
-            "description": "Details a repair procedure for a fuselage frame.",
-            "applicability": {"aircraft_models": ["A350-900"], "serial_numbers": []},
-            "referred_ads": []
-        }
-    ]
-
-    # Technical Order data
-    tos_data = [
-        {
-            "document_id": "TO-2023-A01",
-            "title": "Cockpit Display Unit Update",
-            "originator": "Thai Airways Engineering",
-            "revision": "Ver. 1.0",
-            "issue_date": "2023-08-01",
-            "description": "Procedure for updating cockpit display unit software.",
-            "applicability": {"aircraft_models": ["777-300ER"], "serial_numbers": []},
-            "referred_ads": [],
-            "referred_sbs": []
-        },
-        {
-            "document_id": "TO-2023-A02",
-            "title": "Cabin Lighting Modification",
-            "originator": "Thai Airways Engineering",
-            "revision": "Ver. 1.1",
-            "issue_date": "2023-09-05",
-            "description": "Instructions for installing new LED cabin lighting.",
-            "applicability": {"aircraft_models": ["A350-900"], "serial_numbers": []},
-            "referred_ads": [],
-            "referred_sbs": []
-        }
-    ]
-
-    # Engineering Directive data
-    eds_data = [
-        {
-            "document_id": "ED-2024-01",
-            "title": "Inspection of Landing Gear Latch",
-            "description": "Mandatory inspection of the landing gear latch mechanism.",
-            "applicability": {"aircraft_models": ["777-300ER", "787-8"], "serial_numbers": []},
-            "issue_date": "2024-02-10"
-        },
-        {
-            "document_id": "ED-2024-02",
-            "title": "Fuel Tank Vent System Check",
-            "description": "Check of the fuel tank vent system for blockages.",
-            "applicability": {"aircraft_models": ["A350-900"], "serial_numbers": []},
-            "issue_date": "2024-02-15"
-        }
-    ]
-
-    return {
-        "fleet_metadata": pd.DataFrame(fleet_data),
-        "ads": pd.DataFrame(ads_data),
-        "sbs": pd.DataFrame(sbs_data),
-        "tos": pd.DataFrame(tos_data),
-        "eds": pd.DataFrame(eds_data)
+# Sample data for aircraft and documents. This would typically come from a database.
+aircraft_data = {
+    'All': {'model': 'N/A', 'airworthiness_certificate_date': 'N/A'},
+    'HS-TXC': {
+        'model': 'Airbus A320',
+        'airworthiness_certificate_date': date(2015, 3, 10),
+        'flight_hours': 12500,
+        'flight_cycles': 8900
+    },
+    'HS-TQB': {
+        'model': 'Boeing 787',
+        'airworthiness_certificate_date': date(2018, 7, 25),
+        'flight_hours': 8700,
+        'flight_cycles': 6300
+    },
+    'HS-TWB': {
+        'model': 'Cessna 172',
+        'airworthiness_certificate_date': date(2005, 1, 15),
+        'flight_hours': 2500,
+        'flight_cycles': 20000
     }
+}
 
-# Load data
-data = generate_synthetic_data()
-fleet_df = data["fleet_metadata"]
-ads_df = data["ads"]
-sbs_df = data["sbs"]
-tos_df = data["tos"]
-eds_df = data["eds"]
+# Generate more realistic-looking sample data for documents
+def generate_documents(prefix, count):
+    docs = []
+    for i in range(count):
+        doc = {
+            'document_id': f'{prefix}-{random.randint(100, 999)}-{random.randint(10, 99)}',
+            'title': f'Inspection of {prefix} component {i+1}',
+            'status': random.choice(['Compliant', 'Not Compliant', 'N/A', 'Pending Review']),
+            'date_due': date.today() + timedelta(days=random.randint(10, 365)),
+            'last_completed': date.today() - timedelta(days=random.randint(10, 365))
+        }
+        docs.append(doc)
+    return docs
 
-# --- Streamlit UI ---
+ads = generate_documents('AD', 5)
+sbs = generate_documents('SB', 7)
+tos = generate_documents('TO', 4)
+eds = generate_documents('ED', 6)
 
-st.set_page_config(
-    page_title="Aircraft Document Tracker",
-    layout="wide",
-    initial_sidebar_state="expanded"
+aircraft_documents = {
+    'HS-TXC': {
+        'ADs': [d for d in ads if d['status'] != 'Not Applicable'],
+        'SBs': [d for d in sbs if d['status'] != 'Not Applicable'],
+        'TOs': [d for d in tos if d['status'] != 'Not Applicable'],
+        'EDs': [d for d in eds if d['status'] != 'Not Applicable'],
+    },
+    'HS-TQB': {
+        'ADs': [d for d in ads if d['status'] != 'Not Applicable'],
+        'SBs': [d for d in sbs if d['status'] != 'Not Applicable'],
+        'TOs': [d for d in tos if d['status'] != 'Not Applicable'],
+        'EDs': [d for d in eds if d['status'] != 'Not Applicable'],
+    },
+    'HS-TWB': {
+        'ADs': [d for d in ads if d['status'] != 'Not Applicable'],
+        'SBs': [d for d in sbs if d['status'] != 'Not Applicable'],
+        'TOs': [d for d in tos if d['status'] != 'Not Applicable'],
+        'EDs': [d for d in eds if d['status'] != 'Not Applicable'],
+    }
+}
+
+st.set_page_config(layout="wide")
+st.title("Aircraft Maintenance & Compliance Dashboard")
+
+# 1. Toggle on the page, not the side bar
+aircraft_id = st.selectbox(
+    "Select Aircraft",
+    list(aircraft_data.keys())
 )
 
-st.title("Aircraft Document Tracker")
-st.markdown("Track and manage all relevant documents for your aircraft fleet.")
+st.divider()
 
-# Sidebar for filters
-st.sidebar.header("Filter by Aircraft")
-selected_registration = st.sidebar.selectbox(
-    "Select Aircraft Registration:",
-    options=["All"] + fleet_df["registration"].tolist()
-)
-
-# Display data based on selection
-if selected_registration == "All":
-    st.header("Thai Airways Fleet Overview")
-    st.dataframe(fleet_df, use_container_width=True)
-
-    st.subheader("All Airworthiness Directives (ADs)")
-    st.dataframe(ads_df, use_container_width=True)
-
-    st.subheader("All Service Bulletins (SBs)")
-    st.dataframe(sbs_df, use_container_width=True)
-
-    st.subheader("All Technical Orders (TOs)")
-    st.dataframe(tos_df, use_container_width=True)
-
-    st.subheader("All Engineering Directives (EDs)")
-    st.dataframe(eds_df, use_container_width=True)
-
+if aircraft_id == 'All':
+    st.info("Please select an aircraft from the dropdown above to view its specific details.")
 else:
-    st.header(f"Documents for Aircraft: {selected_registration}")
+    # Get the data for the selected aircraft
+    ac_info = aircraft_data[aircraft_id]
+    ac_docs = aircraft_documents[aircraft_id]
+
+    # Calculate metrics
+    num_ads = len(ac_docs.get('ADs', []))
+    num_sbs = len(ac_docs.get('SBs', []))
+    num_tos = len(ac_docs.get('TOs', []))
+    num_eds = len(ac_docs.get('EDs', []))
+
+    # Example of how to count "pending" tasks
+    pending_tasks = sum(1 for doc in ac_docs.get('ADs', []) if doc['status'] != 'Compliant')
+
+    # New metadata display using columns and metrics
+    st.subheader(f"Metadata for {aircraft_id}")
+    col1, col2, col3, col4 = st.columns(4)
+
+    with col1:
+        st.markdown(f"**Aircraft Model:** `{ac_info['model']}`")
+    with col2:
+        st.markdown(f"**Date into Service:** `{ac_info['airworthiness_certificate_date'].strftime('%B %d, %Y')}`")
+    with col3:
+        st.markdown(f"**Flight Hours:** `{ac_info['flight_hours']:,}`")
+    with col4:
+        st.markdown(f"**Flight Cycles:** `{ac_info['flight_cycles']:,}`")
     
-    # Get the selected aircraft's metadata
-    selected_aircraft = fleet_df[fleet_df["registration"] == selected_registration].iloc[0]
-    st.subheader("Aircraft Information")
-    st.json(selected_aircraft.to_dict())
-
-    # Filter and display documents based on the selected aircraft's applicable lists
-    applicable_ads = ads_df[ads_df["document_id"].isin(selected_aircraft["applicable_ads"])]
-    if not applicable_ads.empty:
-        st.subheader("Applicable Airworthiness Directives (ADs)")
-        st.dataframe(applicable_ads, use_container_width=True)
+    st.markdown("---")
     
-    applicable_sbs = sbs_df[sbs_df["document_id"].isin(selected_aircraft["applicable_sbs"])]
-    if not applicable_sbs.empty:
-        st.subheader("Applicable Service Bulletins (SBs)")
-        st.dataframe(applicable_sbs, use_container_width=True)
+    st.subheader("Task Summary")
+    st.markdown(f"""
+| Document Type | Applicable | Pending Tasks |
+| :--- | :---: | :---: |
+| **Airworthiness Directives (ADs)** | `{num_ads}` | `{pending_tasks}` |
+| **Service Bulletins (SBs)** | `{num_sbs}` | `{sum(1 for doc in ac_docs.get('SBs', []) if doc['status'] != 'Compliant')}` |
+| **Technical Orders (TOs)** | `{num_tos}` | `{sum(1 for doc in ac_docs.get('TOs', []) if doc['status'] != 'Compliant')}` |
+| **Engineering Documents (EDs)** | `{num_eds}` | `{sum(1 for doc in ac_docs.get('EDs', []) if doc['status'] != 'Compliant')}` |
+""")
 
-    applicable_tos = tos_df[tos_df["document_id"].isin(selected_aircraft["applicable_tos"])]
-    if not applicable_tos.empty:
-        st.subheader("Applicable Technical Orders (TOs)")
-        st.dataframe(applicable_tos, use_container_width=True)
+    st.divider()
+    
+    # Tables beside each other (horizontally), with expanders removed
+    st.subheader("Document Details")
+    
+    col_ad, col_sb, col_to, col_ed = st.columns(4)
 
-    applicable_eds = eds_df[eds_df["document_id"].isin(selected_aircraft["applicable_eds"])]
-    if not applicable_eds.empty:
-        st.subheader("Applicable Engineering Directives (EDs)")
-        st.dataframe(applicable_eds, use_container_width=True)
+    with col_ad:
+        st.write("#### Airworthiness Directives")
+        df_ads = pd.DataFrame(ac_docs['ADs'])
+        st.dataframe(df_ads, use_container_width=True, hide_index=True)
+            
+    with col_sb:
+        st.write("#### Service Bulletins")
+        df_sbs = pd.DataFrame(ac_docs['SBs'])
+        st.dataframe(df_sbs, use_container_width=True, hide_index=True)
 
+    with col_to:
+        st.write("#### Technical Orders")
+        df_tos = pd.DataFrame(ac_docs['TOs'])
+        st.dataframe(df_tos, use_container_width=True, hide_index=True)
+            
+    with col_ed:
+        st.write("#### Engineering Documents")
+        df_eds = pd.DataFrame(ac_docs['EDs'])
+        st.dataframe(df_eds, use_container_width=True, hide_index=True)
