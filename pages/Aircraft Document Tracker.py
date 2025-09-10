@@ -250,3 +250,4 @@ else:
     if not applicable_eds.empty:
         st.subheader("Applicable Engineering Directives (EDs)")
         st.dataframe(applicable_eds, use_container_width=True)
+
